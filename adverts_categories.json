@@ -1,0 +1,152 @@
+{
+  "Antiques & Collectables": {
+    "href": "/sell/66",
+    "id": "66",
+    "title": "Antiques & Collectables"
+  },
+  "Art & Crafts": {
+    "href": "/sell/72",
+    "id": "72",
+    "title": "Art & Crafts"
+  },
+  "Baby & Nursery": {
+    "href": "/sell/77",
+    "id": "77",
+    "title": "Baby & Nursery"
+  },
+  "Books & Magazines": {
+    "href": "/sell/87",
+    "id": "87",
+    "title": "Books & Magazines"
+  },
+  "Business & Office": {
+    "href": "/sell/94",
+    "id": "94",
+    "title": "Business & Office"
+  },
+  "Cars, Motorbikes & Boats": {
+    "href": "/sell/46",
+    "id": "46",
+    "title": "Cars, Motorbikes & Boats"
+  },
+  "Clothes, Shoes & Accessories": {
+    "href": "/sell/114",
+    "id": "114",
+    "title": "Clothes, Shoes & Accessories"
+  },
+  "Computers": {
+    "href": "/sell/124",
+    "id": "124",
+    "title": "Computers"
+  },
+  "Consoles & Games": {
+    "href": "/sell/134",
+    "id": "134",
+    "title": "Consoles & Games"
+  },
+  "Crazy Random Stuff": {
+    "href": "/sell/32",
+    "id": "32",
+    "title": "Crazy Random Stuff"
+  },
+  "DIY & Renovation": {
+    "href": "/sell/140",
+    "id": "140",
+    "title": "DIY & Renovation"
+  },
+  "DVD, CD & Movies": {
+    "href": "/sell/108",
+    "id": "108",
+    "title": "DVD, CD & Movies"
+  },
+  "Electronics": {
+    "href": "/sell/145",
+    "id": "145",
+    "title": "Electronics"
+  },
+  "Farming": {
+    "href": "/sell/582",
+    "id": "582",
+    "title": "Farming"
+  },
+  "Free Stuff": {
+    "href": "/sell/0/free",
+    "id": "0",
+    "title": "Free Stuff"
+  },
+  "Health & Beauty": {
+    "href": "/sell/151",
+    "id": "151",
+    "title": "Health & Beauty"
+  },
+  "Home & Garden": {
+    "href": "/sell/159",
+    "id": "159",
+    "title": "Home & Garden"
+  },
+  "Jewellery & Watches": {
+    "href": "/sell/172",
+    "id": "172",
+    "title": "Jewellery & Watches"
+  },
+  "Jobs": {
+    "href": "/sell/3",
+    "id": "3",
+    "title": "Jobs"
+  },
+  "Mobile Phones & Accessories": {
+    "href": "/sell/185",
+    "id": "185",
+    "title": "Mobile Phones & Accessories"
+  },
+  "Music Instruments & Equipment": {
+    "href": "/sell/54",
+    "id": "54",
+    "title": "Music Instruments & Equipment"
+  },
+  "Pets": {
+    "href": "/sell/624",
+    "id": "624",
+    "title": "Pets"
+  },
+  "Photography": {
+    "href": "/sell/196",
+    "id": "196",
+    "title": "Photography"
+  },
+  "Services": {
+    "href": "/sell/202",
+    "id": "202",
+    "title": "Services"
+  },
+  "Sports & Fitness": {
+    "href": "/sell/207",
+    "id": "207",
+    "title": "Sports & Fitness"
+  },
+  "Swap": {
+    "href": "/sell/0/swap",
+    "id": "0",
+    "title": "Swap"
+  },
+  "Tickets": {
+    "href": "/sell/62",
+    "id": "62",
+    "title": "Tickets"
+  },
+  "Toys & Games": {
+    "href": "/sell/229",
+    "id": "229",
+    "title": "Toys & Games"
+  },
+  "Wanted": {
+    "href": "/sell/0/wanted",
+    "id": "0",
+    "title": "Wanted"
+  },
+  "Wedding": {
+    "href": "/sell/644",
+    "id": "644",
+    "title": "Wedding"
+  }
+}

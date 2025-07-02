@@ -1,38 +1,41 @@
-const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+// index.js
+
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import dotenv from 'dotenv';
+
 puppeteer.use(StealthPlugin());
-require("dotenv").config();
+dotenv.config();
 
 (async () => {
   const browser = await puppeteer.launch({
     headless: false,
     defaultViewport: null,
-    args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
 
   const page = await browser.newPage();
 
   // STEP 1: Login
-  await page.goto("https://www.adverts.ie/login", { waitUntil: "networkidle2" });
-  await page.waitForSelector("input#email");
-  await page.type("input#email", process.env.ADVERTS_EMAIL);
+  await page.goto('https://www.adverts.ie/login', { waitUntil: 'networkidle2' });
+  await page.waitForSelector('input#email');
+  await page.type('input#email', process.env.ADVERTS_EMAIL);
   await page.waitForSelector("input[name='password']");
   await page.type("input[name='password']", process.env.ADVERTS_PASSWORD);
 
-  console.log("🛑 Solve CAPTCHA + Login — 30 seconds...");
+  console.log('🛑 Solve CAPTCHA + Login — 30 seconds...');
   await new Promise(resolve => setTimeout(resolve, 30000));
-  await page.waitForNavigation({ waitUntil: "networkidle2" }).catch(() => {});
-  console.log("✅ Logged in.");
+  await page.waitForNavigation({ waitUntil: 'networkidle2' }).catch(() => {});
+  console.log('✅ Logged in.');
 
   let relisted = 0;
 
   while (true) {
-    // Retry wrapper for slow page load
     let tries = 0;
     while (tries < 3) {
       try {
-        await page.goto("https://www.adverts.ie/myadverts/withdrawn", {
-          waitUntil: "domcontentloaded",
+        await page.goto('https://www.adverts.ie/myadverts/withdrawn', {
+          waitUntil: 'domcontentloaded',
           timeout: 60000
         });
         break;
@@ -47,7 +50,7 @@ require("dotenv").config();
     const relistLinks = await page.$$eval("a[href*='/relist/']", links => links.map(link => link.href));
 
     if (relistLinks.length === 0) {
-      console.log("🎉 No more relistable ads left.");
+      console.log('🎉 No more relistable ads left.');
       break;
     }
 
@@ -55,7 +58,7 @@ require("dotenv").config();
 
     for (const link of relistLinks) {
       try {
-        await page.goto(link, { waitUntil: "networkidle2" });
+        await page.goto(link, { waitUntil: 'networkidle2' });
         await page.waitForSelector("button[type='submit'], input[value='Free']", { timeout: 5000 });
         await page.click("button[type='submit'], input[value='Free']");
         console.log(`✅ Relisted #${++relisted}: ${link}`);

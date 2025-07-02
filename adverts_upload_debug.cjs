@@ -163,8 +163,17 @@ function downloadImage(url, filename) {
         }
       }
 
+      // Upload all images using advanced uploader
+      const advancedInput = await page.$('input[type="file"][multiple]');
+      if (advancedInput) {
+        await advancedInput.uploadFile(...localImagePaths);
+        console.log(`📸 Uploaded ${localImagePaths.length} images via advanced uploader`);
+        await wait(3000); // allow previews and ajax processing
+      } else {
+        console.warn('⚠️ Could not find advanced uploader input field');
+      }
       // Step 2: Upload images to correct fields and trigger change event
-      const uploadFields = ['file1', 'file2', 'file3', 'file4', 'file5'];
+      /*const uploadFields = ['file1', 'file2', 'file3', 'file4', 'file5'];
 
       for (let i = 0; i < Math.min(localImagePaths.length, uploadFields.length); i++) {
         const fileInput = await page.$(`input[name="${uploadFields[i]}"]`);
@@ -186,7 +195,7 @@ function downloadImage(url, filename) {
         } else {
           console.warn(`⚠️ Could not find input for ${uploadFields[i]}`);
         }
-      }
+      }*/
 
        // Click the Not Sell faster button
        const noFasterLabel = await page.$('label[for="donedeal_paid_share_no"]');

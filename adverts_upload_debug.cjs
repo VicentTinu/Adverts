@@ -1,7 +1,4 @@
-// Load environment variables from .env file
 require('dotenv').config();
-
-// Import required modules
 const fs = require('fs');
 const path = require('path');
 const puppeteer = require('puppeteer-extra');
@@ -10,61 +7,28 @@ const readline = require('readline');
 const { ChatGPTAPI } = require('chatgpt');
 const https = require('https');
 
-// Constants
-const TMP_DIR = path.resolve(__dirname, 'tmp_uploads');
-if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR);
-
-// Enable Puppeteer stealth mode
 puppeteer.use(StealthPlugin());
 
-// Utility: wait
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// Utility: wait for Enter after login
 const waitForEnter = () => new Promise(resolve => {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  rl.question('🔐 Press Enter once logged in...\n', () => {
+  rl.question('🔐 Press Enter once logged in...', () => {
     rl.close();
     resolve();
   });
 });
 
-// GPT setup
 const openai = new ChatGPTAPI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Utility: clear tmp_uploads folder
+const TMP_DIR = path.resolve(__dirname, 'tmp_uploads');
+if (!fs.existsSync(TMP_DIR)) fs.mkdirSync(TMP_DIR);
+
 function clearTmpUploads() {
-  fs.readdirSync(TMP_DIR).forEach(file => fs.unlinkSync(path.join(TMP_DIR, file)));
+  if (fs.existsSync(TMP_DIR)) {
+    fs.readdirSync(TMP_DIR).forEach(file => fs.unlinkSync(path.join(TMP_DIR, file)));
+  }
 }
 
-// Utility: download image from URL to tmp_uploads
-function downloadImage(url, filename) {
-  return new Promise((resolve, reject) => {
-    const filePath = path.join(TMP_DIR, filename);
-    const file = fs.createWriteStream(filePath);
-
-    const options = {
-      headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
-        'Referer': 'https://www.google.com/'
-      }
-    };
-
-    https.get(url, options, (response) => {
-      if (response.statusCode !== 200) {
-        reject(new Error(`Response status: ${response.statusCode}`));
-        return;
-      }
-      response.pipe(file);
-      file.on('finish', () => file.close(() => resolve(filePath)));
-    }).on('error', (err) => {
-      fs.unlink(filePath, () => reject(err));
-    });
-  });
-}
-
-// GPT category suggestion
 async function getCategorySuggestion(adTitle, adDescription, categoryList) {
   const prompt = `Given the following ad title and description, choose the most suitable category from this list: ${categoryList.join(', ')}.\n\nTitle: "${adTitle}"\nDescription: "${adDescription}"\n\nReturn only the exact matching category name.`;
   try {
@@ -76,7 +40,37 @@ async function getCategorySuggestion(adTitle, adDescription, categoryList) {
   }
 }
 
-// Main logic
+function downloadImage(url, filename) {
+  return new Promise((resolve, reject) => {
+    const filePath = path.join(TMP_DIR, filename);
+    const file = fs.createWriteStream(filePath);
+
+    const options = {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        'Referer': 'https://www.google.com/'
+      }
+    };
+
+    https.get(url, options, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Response status: ${response.statusCode}`));
+        return;
+      }
+      response.pipe(file);
+      file.on('finish', () => {
+        file.close(() => {
+          console.log(`✅ Downloaded to: ${filePath}`);
+          resolve(filePath);
+        });
+      });
+    }).on('error', (err) => {
+      fs.unlink(filePath, () => reject(err));
+    });
+  });
+}
+
 (async () => {
   const ads = JSON.parse(fs.readFileSync('full_details.json', 'utf-8'));
   const categories = JSON.parse(fs.readFileSync('adverts_categories.json', 'utf-8'));
@@ -95,8 +89,8 @@ async function getCategorySuggestion(adTitle, adDescription, categoryList) {
 
   for (const ad of ads) {
     try {
-      console.log(`➡️ Preparing to post: ${ad.title}`);
       clearTmpUploads();
+      console.log(`➡️ Preparing to post: ${ad.title}`);
 
       await page.goto('https://www.adverts.ie/sell', { waitUntil: 'domcontentloaded' });
       await page.waitForSelector('input[name="title"]');
@@ -114,7 +108,6 @@ async function getCategorySuggestion(adTitle, adDescription, categoryList) {
         await wait(1500);
       }
 
-      // Fallback to "Other"
       await page.evaluate(() => {
         const links = Array.from(document.querySelectorAll('.category-holder a'));
         const match = links.find(el => el.textContent.toLowerCase().includes('other'));
@@ -149,41 +142,70 @@ async function getCategorySuggestion(adTitle, adDescription, categoryList) {
         }, label);
       }
 
-      // Switch to basic uploader
+      // 🧠 Switch to Basic Uploader if available
       await page.evaluate(() => {
         const toggle = document.querySelector('.js-switch-to-basic-action');
         if (toggle) toggle.click();
       });
       await wait(1000);
 
-      // Download image files
+      // ✅ Download and upload images
       const imageUrls = ad.images || [];
+      const localImagePaths = [];
+
       for (let i = 0; i < Math.min(imageUrls.length, 5); i++) {
         try {
-          const ext = path.extname(new URL(imageUrls[i]).pathname).split('?')[0] || '.jpg';
-          const filename = `image_${i}_${Date.now()}${ext}`;
-          await downloadImage(imageUrls[i], filename);
+          const filename = `upload_${Date.now()}_${i}.jpg`;
+          const filePath = await downloadImage(imageUrls[i], filename);
+          localImagePaths.push(filePath);
         } catch (err) {
           console.warn(`⚠️ Failed to download image ${imageUrls[i]}: ${err.message}`);
         }
       }
 
-      // Upload images
-      const uploadableImages = fs.readdirSync(TMP_DIR).filter(f => /\.(jpe?g|png)$/i.test(f));
+      // Step 2: Upload images to correct fields and trigger change event
       const uploadFields = ['file1', 'file2', 'file3', 'file4', 'file5'];
 
-      for (let i = 0; i < Math.min(uploadableImages.length, uploadFields.length); i++) {
+      for (let i = 0; i < Math.min(localImagePaths.length, uploadFields.length); i++) {
         const fileInput = await page.$(`input[name="${uploadFields[i]}"]`);
-        const imagePath = path.join(TMP_DIR, uploadableImages[i]);
 
         if (fileInput) {
-          await fileInput.uploadFile(imagePath);
-          console.log(`📸 Uploaded ${uploadableImages[i]} to ${uploadFields[i]}`);
-          await wait(1000);
+          await fileInput.uploadFile(localImagePaths[i]);
+          console.log(`📸 Uploaded ${path.basename(localImagePaths[i])} to ${uploadFields[i]}`);
+
+          // Trigger change event so Adverts.ie reacts to the file upload
+          await page.evaluate((fieldName) => {
+            const input = document.querySelector(`input[name="${fieldName}"]`);
+            if (input) {
+              const event = new Event('change', { bubbles: true });
+              input.dispatchEvent(event);
+            }
+          }, uploadFields[i]);
+
+          await wait(1500); // Let the preview image render
         } else {
           console.warn(`⚠️ Could not find input for ${uploadFields[i]}`);
         }
       }
+
+       // Click the Not Sell faster button
+       const noFasterLabel = await page.$('label[for="donedeal_paid_share_no"]');
+       if (noFasterLabel) {
+         await noFasterLabel.click();
+         console.log('🚫 Selected: No, I don\'t want to sell faster');
+       } else {
+         console.warn('⚠️ Could not find the "don\'t want to sell faster" option');
+       }
+ 
+       // Click the "Post Ad" button
+       const finishButton = await page.$('input#btn-save');
+       if (finishButton) {
+         await finishButton.click();
+         console.log('🏁 Clicked Finish to submit the ad');
+         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+       } else {
+         console.warn('⚠️ Could not find Finish button');
+       }
 
       console.log(`✅ Ad filled: ${ad.title}`);
       await wait(2000);

@@ -64,11 +64,6 @@
     "id": "145",
     "title": "Electronics"
   },
-  "Farming": {
-    "href": "/sell/582",
-    "id": "582",
-    "title": "Farming"
-  },
   "Free Stuff": {
     "href": "/sell/0/free",
     "id": "0",
@@ -103,11 +98,6 @@
     "href": "/sell/54",
     "id": "54",
     "title": "Music Instruments & Equipment"
-  },
-  "Pets": {
-    "href": "/sell/624",
-    "id": "624",
-    "title": "Pets"
   },
   "Photography": {
     "href": "/sell/196",

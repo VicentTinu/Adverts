@@ -1,3 +1,7 @@
+// This script is used to scrape the URLs of all ads on the adverts.ie website.
+// It is used to get the URLs of all ads so that we can scrape the full details of each ad.
+// It is number 1 in the adverts_scraper.cjs script.
+
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');

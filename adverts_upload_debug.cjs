@@ -87,6 +87,98 @@ function downloadImage(url, filename) {
   });
 }
 
+// Function to get a formatted description using OpenAI and the provided template
+async function getFormattedDescription(originalDescription) {
+  // First, use OpenAI to extract only the product description from the original
+  const extractionPrompt = `Extract only the product description/features from the following text. Remove any shipping information, payment details, seller information, or other non-product details. Return only what describes the product itself:\n\n${originalDescription}`;
+  
+  let productDescription;
+  try {
+    const extractionRes = await openai.sendMessage(extractionPrompt);
+    productDescription = extractionRes.text.trim();
+  } catch (err) {
+    console.error('❌ GPT error (description extraction):', err.message);
+    productDescription = originalDescription; // fallback to original if extraction fails
+  }
+  
+  // Now build the template with the extracted product description
+  const template = `PLEASE READ DESCRIPTION
+
+Condition: 100% Brand New in Box 
+
+Our Warehouse Locations IRE/UK 🌍
+
+💰Hassle-Free and Secure Transactions💰
+
+🚚In Stock for Shipping Only
+
+✔️Product Description:
+
+${productDescription}
+
+(Hower Much is in description) Nationwide Delivery in Ireland🇮🇪 
+
+⚡️ Lightning-Fast Delivery 1-2 Days
+
+No Cash Sales, No Cash on Delivery
+
+Our Payment Options:
+
+💳 Payment to be made via Revolut or PayPal or Bank Transfer to complete order efficiently.
+
+For further assistance contact us through WhatsApp/Phone
+
+Thank you`;
+  
+  try {
+    return template;
+  } catch (err) {
+    console.error('❌ GPT error (template building):', err.message);
+    return template; // fallback to template with extracted description
+  }
+}
+
+async function extractFeatures(originalDescription) {
+  const prompt = `Extract only the product features from the following description. Do not include shipping, payment, or seller information. List the features in clear, concise bullet points if possible.\n\nDescription:\n${originalDescription}\n\nFeatures:`;
+  try {
+    const res = await openai.sendMessage(prompt);
+    return res.text.trim();
+  } catch (err) {
+    console.error('❌ GPT error (feature extraction):', err.message);
+    return originalDescription; // fallback to original if extraction fails
+  }
+}
+
+function buildDescription(featuresText) {
+  return `PLEASE READ DESCRIPTION
+
+Condition: 100% Brand New in Box 
+
+Our Warehouse Locations IRE/UK 🌍
+
+💰Hassle-Free and Secure Transactions💰
+
+🚚In Stock for Shipping Only
+
+✔️Product Description:
+
+${featuresText}
+
+7.99 Nationwide Delivery in Ireland🇮🇪 
+
+⚡️ Lightning-Fast Delivery 1-2 Days
+
+No Cash Sales, No Cash on Delivery
+
+Our Payment Options:
+
+💳 Payment to be made via Revolut or PayPal or Bank Transfer to complete order efficiently.
+
+For further assistance contact us through WhatsApp/Phone
+
+Thank you`;
+}
+
 // Main async IIFE to run the automation
 (async () => {
   // Load ads and categories from JSON files
@@ -150,16 +242,19 @@ function downloadImage(url, filename) {
       // Clear the title field and type the real ad title
       await page.evaluate(() => document.querySelector('input[name="title"]').value = '');
       await page.type('input[name="title"]', ad.title);
-      // Fill in the ad description
-      await page.type('textarea[name="description"]', ad.description);
+      // Use OpenAI to generate a formatted description for the ad
+      const featuresText = await extractFeatures(ad.description);
+      const formattedDescription = buildDescription(featuresText);
+      await page.type('textarea[name="description"]', formattedDescription);
 
       // Click the 'Brand New' checkbox if it exists
       const brandCheckbox = await page.$('#brand_new');
       if (brandCheckbox) await brandCheckbox.click();
 
-      // Clean the price string and type it in
-      const cleanPrice = ad.price.toString().replace(/[^\d.]/g, '');
-      await page.type('input[name="price"]', cleanPrice);
+      // Subtract 7 from the original price, ensuring it does not go below zero
+      let originalPrice = parseFloat(ad.price.toString().replace(/[^\d.]/g, ''));
+      let repostPrice = Math.max(0, originalPrice - 7);
+      await page.type('input[name="price"]', repostPrice.toString());
 
       // Select shipping options by clicking the appropriate labels
       const shippingOptions = ['Delivery', 'Post/Courier'];

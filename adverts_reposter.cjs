@@ -112,7 +112,7 @@ Condition: 100% Brand New in Box
 
 Our Warehouse Locations IRE/UK 🌍
 
-💰Hassle-Free and Secure Transactions💰
+💰Hassle-Free and Safe Transactions💰
 
 🚚In Stock for Shipping Only
 
@@ -160,7 +160,7 @@ Condition: 100% Brand New in Box
 
 Our Warehouse Locations IRE/UK 🌍
 
-💰Hassle-Free and Secure Transactions💰
+💰Hassle-Free and Safe Transactions💰
 
 🚚In Stock for Shipping Only
 
